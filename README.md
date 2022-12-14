@@ -3,4 +3,5 @@ monitoring configurations
 
 ## Filebeat
 - filebeat for production. All container logs will be sent to elk.amd.com and accessible at eck.amd.com
-- devcloud/D3vcl0ud # credentials
+- 2 sysdig built postgresql dashboards
+- 2 sysdig built mongodb dashboards
