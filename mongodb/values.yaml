@@ -1,0 +1,10 @@
+existingSecret:
+  name: mongodb-sysdig
+exporterNamespaceName: databases
+namespace: databases
+namespaceName: databases
+sslmode: false
+tlsmode: false
+ubi: false
+workloadName: mongodb
+workloadType: deployment

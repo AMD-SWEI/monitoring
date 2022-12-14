@@ -1,0 +1,81 @@
+---
+# Source: mongodb-exporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-exporter-databases-mongodb-deploy
+  namespace: databases
+  labels:
+    helm.sh/chart: mongodb-exporter-0.1.6
+    app.kubernetes.io/name: mongodb-exporter-databases-mongodb
+    app.kubernetes.io/version: "2"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mongodb-exporter-databases-mongodb
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        promcat.sysdig.com/port: "9216"
+        promcat.sysdig.com/target_ns: "databases"
+        promcat.sysdig.com/target_workload_type: "deployment"
+        promcat.sysdig.com/target_workload_name: "mongodb"
+        promcat.sysdig.com/integration_type: "mongodb"
+      labels:
+        app.kubernetes.io/name: mongodb-exporter-databases-mongodb
+    spec:
+      affinity: {}
+      containers:
+      - name: mongodb-exporter
+        image: "quay.io/sysdig/mongodb-exporter:v0.11.7"
+        args:
+        - --web.listen-address=:9216
+        - --collect.collection
+        - --collect.database
+        - --collect.indexusage
+        - --collect.topmetrics
+        - --collect.connpoolstats
+        env:
+          - name: MONGODB_URI
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-sysdig
+                key: mongodb-uri
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /
+            port: metrics
+          initialDelaySeconds: 10
+        ports:
+        - name: metrics
+          containerPort: 9216
+          protocol: TCP
+        readinessProbe:
+          null
+        resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+          runAsGroup: 10000
+          runAsNonRoot: true
+          runAsUser: 10000
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      volumes:
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
